@@ -1,7 +1,7 @@
 // we needs a structured way to tell the frontend(container) what files to create.
 // Then your container can parse this structure.
-
-export const basePrompt = `
+// Node setup= index.js, package.json
+export const nodeBasePrompt = `
   <boltArtifact
     id="project-import"
     title="Project Files"

@@ -1,4 +1,4 @@
-export const basePrompt = `
+export const reactBasePrompt = `
 <boltArtifact
   id="project-import"
   title="Project Files"
@@ -254,3 +254,4 @@ createRoot(document.getElementById('root')!).render(
   </boltAction>
 </boltArtifact>
 `;
+// React/Vite setup= eslint.config.js, index.html, package.json, postcss.config.js, tailwind.config.js, tsconfig.app.json, tsconfig.json, tsconfig.node.json, vite.config.ts, src/App.tsx, src/index.css, src/main.tsx, src/vite-env.d.ts
