@@ -2,7 +2,7 @@ import React from "react";
 import Editor from "@monaco-editor/react"
 
 export function CodeEditor({file}){
-    // file-file that it has to show
+    // file->file that it has to show
     if(!file){
         return(
             <div className="h-full flex items-center justify-center text-gray-400">
