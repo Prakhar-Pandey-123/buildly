@@ -22,7 +22,7 @@ app.post("/template",async(req,res)=>{
         model:"gemini-3.5-flash-lite",
         contents:prompt,
         config:{
-            systemInstruction:`return either node or react based on what do u think this project should be.only return a single word either 'node' or 'react'.do not return anything extra`
+            systemInstruction:`return either node or react based on what do u think this project should be.if the prompt is not about web development project then return 'else'.only return a single word either 'node' or 'react' or 'else'.do not return anything extra`
         }
     })
     const answer=response.text;
