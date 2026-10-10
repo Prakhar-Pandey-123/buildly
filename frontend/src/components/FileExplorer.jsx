@@ -57,6 +57,7 @@ function FileNode({item,depth,setSelectedFile}){
 
 
 // to show the list of all created files/folders 
+// setselectedfile=bcoz code editor need to show that file 
 export function FileExplorer({files,setSelectedFile}){
     // onfileselect is usestate fn called [selectedfile , setSelectedFile] 
     <div className="bg-gray-900 rounded-lg shadow-lg p-4 h-full overflow-auto">
