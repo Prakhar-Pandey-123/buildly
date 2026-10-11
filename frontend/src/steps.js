@@ -32,15 +32,5 @@ input can have strings in middle so use regex
 */
 
 export function parseXml(response){
-
-    const xmlMatch=response.match(/<boltArtifact[^>]*>([\s\S]*?)<\/boltArtifact>/);
-
-    if(!xmlMatch){
-        return [];
-    }
-    const xmlContent=xmlMatch[1];
-    const steps=[];
-    let stepId=1;
-    
-
+    return [];
 }

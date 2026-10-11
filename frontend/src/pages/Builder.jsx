@@ -45,18 +45,29 @@ export function Builder(){
 // ]
 
     const [files,setFiles]=useState([]);//this contains every code file that file/folder explorer shows 
-// [
-//   {
+
 //     name: "src",
 //     type: "folder",
 //     path: "/src",
 //     children: [
 //       {
-//         name: "App.tsx",
-//         type: "file",
-//         path: "/src/App.tsx",
-//         content: "function App() { ... }"
-//       }]}]
+//         name: "component",
+//         type: "folder",
+//         path: "/src/component",
+//         children: [
+//           {
+//             name: "app.jsx",
+//             type: "file",
+//             path: "/src/component/app.jsx",
+//             content: "..." // app.jsx code
+//           },
+//           {
+//             name: "button.jsx",
+//             type: "file",
+//             path: "/src/component/button.jsx",
+//             content: "..." // button.jsx code
+//           }
+//         ]]
 
     const [templateSet,setTemplateSet]=useState(false);
     // templateSet = false → Show the loader
@@ -111,6 +122,78 @@ export function Builder(){
     useEffect(()=>{
         init()
     },[])
+
+// ====== this is for creating all files from the 'steps' that will be shown in file explorer======
+
+useEffect(()=>{
+    let originalFiles=[...files];
+    let updateHappened=false;//helps to stop this effect if no update happened otherwise it will go on infinite updates
+    
+    // pick up the first pending update
+    steps.filter(({status})=>status==='pending').map(step=>{
+        updateHappened=true;
+        if(step?.type==='CreateFile'){
+            let parsedPath=step.path?.split("/")??[]; //["src","components","app.jsx"]
+
+            let currentFileStructure=[...originalFiles];
+        let finalAnswerRef=currentFileStructure
+            let currentFolder=""
+            while(parsedPath.length){//as long as items are present we will loop through else it is over(we keep popping from the front)
+
+                currentFolder=`${currentFolder}/${parsedPath[0]}`
+                // first it becomes src then src/component then src/component/app.jsx
+                let currentFolderName=parsedPath[0];
+                // get the current folder/file name
+
+            parsedPath=parsedPath.slice(1);
+                //remove the current file/folder from current path
+
+            if(!parsedPath.length){
+                // it is file =app.jsx from src/component/app.jsx
+                let file=currentFileStructure.find(x=>x.path===currentFolder)
+                if(!file){
+                    // file dont exist=create new one
+                    currentFileStructure.push({
+                        name:currentFolderName,
+                        type:'file',
+                        path:currentFolder,
+                        content:step.code
+                    })
+                }
+                else{//update the code=file is already there
+                    file.content=step.code;
+                }
+            }
+            else{//its a folder 
+                let folder=currentFileStructure.find(x=>x.path===currentFolder)
+                if(!folder){//create a new folder and then latter push the files in the children of this folder
+                    currentFileStructure.push({
+                        name:currentFolderName,
+                        type:'folder',
+                        path:currentFolder,
+                        children:[]
+                    })
+                }
+                // then move into the children of this folder eg-src->childre=component
+                currentFileStructure=currentFileStructure.find(x=>x.path===currentFolder).children;
+            }
+            }
+            originalFiles=finalAnswerRef;
+        }
+    })
+    if(updateHappened){
+        setFiles(originalFiles)
+        setSteps(steps=>
+            steps.map((s)=>{
+                return {
+                    ...s,
+                    status:"completed"
+                }
+            })
+        )
+    }
+    console.log(files);
+},[steps,files])
 
     return(
         <div className="min-h-screen bg-gray-900 flex flex-col">
