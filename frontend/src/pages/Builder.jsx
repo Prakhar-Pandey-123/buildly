@@ -123,7 +123,7 @@ export function Builder(){
         init()
     },[])
 
-// ====== this is for creating all files from the 'steps' that will be shown in file explorer======
+// ====== this is for creating all files from the 'steps', that will be shown in file explorer======
 
 useEffect(()=>{
     let originalFiles=[...files];
@@ -194,6 +194,77 @@ useEffect(()=>{
     }
     console.log(files);
 },[steps,files])
+
+//==================== this is for creating structure as required by webContainer during mouting files/folders in it and then mount it into webcontainer==================
+
+useEffect(()=>{
+    const createMountStructure=(files)=>{
+        // the outer fn to create whole structure as req by webcontainer
+        const mountStructure={};
+        // object that will contain final structure as-
+//         const files = [
+//     {
+//         name: "package.json",
+//         type: "file",
+//         content: '{"scripts":{"dev":"vite"}}'
+//     },
+//     {
+//         name: "src",
+//         type: "folder",
+//         children: [
+//             {
+//                 name: "App.jsx",
+//                 type: "file",
+//                 content: "function App() { return <h1>Hello</h1> }"
+//             }
+//         ]
+    const processFile=(file,isRootFolder)=>{
+        // recursive fn to create structure
+        //isrootfolder is bool that tells if folder/file is in root directory or not
+        if(file.type==='folder'){
+            //for folder create a folder entry
+            mountStructure[file.name]={
+                directory:file.children?
+                Object.fromEntries(
+                    file.children.map(child=>[child.name,processFile(child,false)])
+                )
+                :{}
+                // if that folder has children then call the recursive fn for every children file 
+            }
+            }
+            else if(file.type==='file'){
+                // if it is rootfolder then just put it in struct
+                if(isRootFolder){
+                    mountStructure[file.name]={
+                        file:{
+                            contents:file.content||''
+                        }
+                    }
+                }
+                else{
+                    // else return , coz it is been called by root folder
+                    return{
+                        file:{
+                            contents:file.content||''
+                        }
+                    }
+                }
+            }
+            return mountStructure[file.name]
+    }
+    // call the recursive fn for every root file/folder
+    files.forEach(file=>processFile(file,true));
+    return mountStructure;
+    }
+
+    const mountStructure=createMountStructure(files)
+    // call the base fn for the 'files'
+    console.log(mountStructure);
+    // put it into the webcontainer
+    webcontainer?.mount(mountStructure);
+
+},[files,webcontainer]);
+
 
     return(
         <div className="min-h-screen bg-gray-900 flex flex-col">
