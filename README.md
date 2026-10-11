@@ -152,7 +152,3 @@ The goal is to make building and iterating on web applications faster and more a
 - Improved dependency and command handling
 - Better handling of build errors and AI-generated fixes
 - Project export and Git integration
-
-## 📄 License
-
-Choose and add a license before distributing the project for reuse.
