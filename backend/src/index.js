@@ -4,7 +4,7 @@ import express from "express"
 import { reactBasePrompt } from "./react_prompt.js"
 import {nodeBasePrompt} from "./nodejs_prompt.js"
 import { getSystemPrompt } from "./system_prompt.js"
-
+import cors from "cors";
 
 const ai=new GoogleGenAI({
     apiKey:process.env.GEMINI_API_KEY
@@ -12,6 +12,7 @@ const ai=new GoogleGenAI({
 
 const app=express();
 app.use(express.json());
+app.use(cors());
 
 //for knowing if we are building react or nodejs and then giving intial setup commands
 app.post("/template",async(req,res)=>{
@@ -28,6 +29,8 @@ app.post("/template",async(req,res)=>{
     const answer=response.text;
     if(answer=="react"){
         // prompts are for llm, uiprompts are for frontend/we containers
+        
+    console.log("response of template route",response.text);
         return res.json({
             prompts:["we supports JSX syntax with Tailwind CSS classes, React hooks, and Lucide React for icons. Do not install other packages for UI themes, icons, etc","these are the files that are already present for react- eslint.config.js, index.html, package.json, postcss.config.js, tailwind.config.js, tsconfig.app.json, tsconfig.json, tsconfig.node.json, vite.config.ts, src/App.tsx, src/index.css, src/main.tsx, src/vite-env.d.ts"],
             uiPrompts:[reactBasePrompt]
@@ -54,6 +57,7 @@ app.post("/chat",async(req,res)=>{
             systemInstruction:getSystemPrompt()
         }
     })
+    console.log("response of chat route",response.text);
     return res.json({
         response:response.text
     })

@@ -8,7 +8,8 @@ import { Loader } from "../components/Loader";
 import {FileExplorer} from "../components/FileExplorer"
 import {TabView} from "../components/TabView"
 import {CodeEditor} from "../components/CodeEditor"
-
+import {parseXml} from "../steps.js"
+import {PreviewFrame} from "../components/PreviewFrame.jsx"
 
 
 export function Builder(){
@@ -16,7 +17,7 @@ export function Builder(){
     const location =useLocation(); 
     const {prompt}=location.state;
 
-    const [llmMessages,setLlmMessages]=useState();// this will act as history of prev convo to the llm
+    const [llmMessages,setLlmMessages]=useState([]);// this will act as history of prev convo to the llm
 
     const [loading,setLoading]=useState(false);//show the loader
 
@@ -361,7 +362,10 @@ useEffect(()=>{
                             file={selectedFile}
                         ></CodeEditor>)
                         :(
-                           <PreviewFrame>
+                           <PreviewFrame
+                                files={files}
+                                webContainer={webcontainer}
+                            >
                            </PreviewFrame> 
                         )
                     }

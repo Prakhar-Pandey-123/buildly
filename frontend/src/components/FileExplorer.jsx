@@ -33,6 +33,7 @@ function FileNode({item,depth,setSelectedFile}){
                 ?(<FolderTree className="w-4 h-4 text-blue-400"></FolderTree>)
                 :(<File className="w-4 h-4 text-gray-400"></File>)
                }
+               <span className="text-gray-200">{item.name}</span>
                </div>
                {//if the folder is expanded then show its files
                 item.type==='folder' && isExpanded && item.children &&(
@@ -42,6 +43,7 @@ function FileNode({item,depth,setSelectedFile}){
                                 <FileNode 
                                     key={`${child.path}-${index}`}
                                     item={child}
+                                    depth={depth+1}
                                     setSelectedFile={setSelectedFile}
                                 >
                                 </FileNode>
@@ -59,10 +61,12 @@ function FileNode({item,depth,setSelectedFile}){
 // to show the list of all created files/folders 
 // setselectedfile=bcoz code editor need to show that file 
 export function FileExplorer({files,setSelectedFile}){
+    return(
     // onfileselect is usestate fn called [selectedfile , setSelectedFile] 
     <div className="bg-gray-900 rounded-lg shadow-lg p-4 h-full overflow-auto">
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-100">
-            <FolderTree className="w-5 h-5"></FolderTree>
+            <FolderTree className="w-5 h-5">
+            </FolderTree>
             File Explorer
         </h2>
         <div className="space-y-1">
@@ -81,4 +85,5 @@ export function FileExplorer({files,setSelectedFile}){
             }
         </div>
     </div>
+    )
 }

@@ -86,7 +86,7 @@ export function parseXml(response){
                 id:stepId++,
                 title:'run command',
                 description:'',
-                type:RunScript,
+                type:'RunScript',
                 status:'pending',
                 code:content.trim()
             })
