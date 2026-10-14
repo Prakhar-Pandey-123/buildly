@@ -73,19 +73,19 @@ export function parseXml(response){
             // if its a file creation
             steps.push({
                 id:stepId++,
-                title:`create ${filePath}||'file'`,
+                title:`create ${filePath}||"file"`,
                 description:'',
-                type:'CreateFile',
-                status:'pending',
+                type:"CreateFile",
+                status:"pending",
                 code:content.trim(),
                 path:filePath
             })
         }
-        else if(type==='shell'){
+        else if(type==="shell"){
             steps.push({
                 id:stepId++,
-                title:'run command',
-                description:'',
+                title:"run command",
+                description:"",
                 type:'RunScript',
                 status:'pending',
                 code:content.trim()

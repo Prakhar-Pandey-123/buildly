@@ -83,22 +83,25 @@ export function Builder(){
         });
         setTemplateSet(true);
         const {prompts,uiPrompts}=response.data;
+        console.log("uiprompt on fe",uiPrompts);
         // parse the xml we got from uiprompts(be) then add it to the steps 
         setSteps( parseXml(uiPrompts[0]).map((x) =>({
             ...x,
             status:'pending'
         }) ))
+        console.log("steps after ui promots on fe",steps);
 
         setLoading(true);
 
         // prompts=2 system prompts that came from backend->
         // telling llm the files that are already present+use's prompt
+
         const stepsResponse=await axios.post(`${BACKEND_URL}/chat`,{
             messages:[...prompts,prompt].map(content=>({
                 role:'user',
-                content
+                parts:[{text:content}]
             }))
-        })
+        });
 
         setLoading(false);
         // set the steps we got from llm 
@@ -107,16 +110,21 @@ export function Builder(){
             status:'pending'
         }))])
 
-        // store the chat history
-        setLlmMessages([...prompts,prompt].map(content=>({
-            role:'user',
-            content
-        })))
-
-        setLlmMessages(x=>[...x,{
-            role:'assistant',
-            content:stepsResponse.data.response
-        }])
+                // store the chat history
+            setLlmMessages([
+            ...prompts.map(content => ({
+                role: "user",
+                parts: [{ text: content }]
+            })),
+            {
+                role: "user",
+                parts: [{ text: prompt }]
+            },
+            {
+                role: "model",
+                parts: [{ text: stepsResponse.data.response }]
+            }
+            ]);
     }
 
 
@@ -306,7 +314,7 @@ useEffect(()=>{
                             onClick={async()=>{
                             const newMessage={
                                 role:'user',
-                                content:userPrompt
+                                parts:[{text:userPrompt}]
                             } 
                             setLoading(true)
 
@@ -316,17 +324,20 @@ useEffect(()=>{
                             })
                             setLoading(false)
 
-                            setLlmMessages(x=>[...x,newMessage]);
-
-                            setLlmMessages(x=>[...x,{
-                                role:'assistant',
-                                content:stepsResponse.data.response
-                            }]);
+                            setLlmMessages(x => [
+                                ...x,
+                                newMessage,
+                                {
+                                    role: "model",
+                                    parts: [{ text: stepsResponse.data.response }]
+                                }
+                            ]);
 
                             setSteps(s=>[...s,...parseXml(stepsResponse.data.response).map(x=>({
                                 ...x,
                             status:'pending'
                             }))])
+                            setUserPrompt("");
 
                             }}
                             className="bg-purple-400 px-4"

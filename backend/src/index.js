@@ -18,6 +18,7 @@ app.use(cors());
 app.post("/template",async(req,res)=>{
     const prompt=req.body.prompt;
     // this is user's pure prompt
+    console.log("input for template",prompt);
 
     const response=await ai.models.generateContent({
         model:"gemini-3.5-flash-lite",
@@ -27,18 +28,18 @@ app.post("/template",async(req,res)=>{
         }
     })
     const answer=response.text;
+    console.log("response of template route",response.text);
     if(answer=="react"){
         // prompts are for llm, uiprompts are for frontend/we containers
         
-    console.log("response of template route",response.text);
         return res.json({
-            prompts:["we supports JSX syntax with Tailwind CSS classes, React hooks, and Lucide React for icons. Do not install other packages for UI themes, icons, etc","these are the files that are already present for react- eslint.config.js, index.html, package.json, postcss.config.js, tailwind.config.js, tsconfig.app.json, tsconfig.json, tsconfig.node.json, vite.config.ts, src/App.tsx, src/index.css, src/main.tsx, src/vite-env.d.ts"],
+            prompts:["create a BASIC REACT WEBSITE ,DO NOT WRITE BACKEND OR EXPRESS ,JUST FRONTEND IN REACT,we supports JSX syntax with Tailwind CSS classes, React hooks, and Lucide React for icons. Do not install other packages for UI themes, icons, etc","these are the files that are already present for react- eslint.config.js, index.html, package.json, postcss.config.js, tailwind.config.js, vite.config.js, src/App.jsx, src/index.css, src/main.jsx"],
             uiPrompts:[reactBasePrompt]
         })
     }
     if(answer=="node"){
         return res.json({
-            prompts:["these are the files that are already present for node= index.js, package.json"],
+            prompts:["create a BASIC NODE JS BACKEND, these are the files that are already present for node= index.js, package.json"],
             uiPrompts:[nodeBasePrompt]
         })
     }
@@ -50,19 +51,20 @@ app.post("/template",async(req,res)=>{
 
 app.post("/chat",async(req,res)=>{
     const messages=req.body.messages;
-    const response=await ai.models.generateContent({
-        model:"gemini-3.5-flash-lite",
-        contents:[""],
-        config:{
-            systemInstruction:getSystemPrompt()
-        }
-    })
-    console.log("response of chat route",response.text);
+    console.log("input for chat",messages);
+    // const response=await ai.models.generateContent({
+    //     model:"gemini-3.5-flash-lite",
+    //     contents:messages,
+    //     config:{
+    //         systemInstruction:getSystemPrompt()
+    //     }
+    // })
+    // console.log("response of chat route",response.text);
     return res.json({
-        response:response.text
+        response:"hi"
     })
 })
-
+// response.text
 app.listen(3000,()=>{
     console.log("app is listening at the port 3000")
 });
