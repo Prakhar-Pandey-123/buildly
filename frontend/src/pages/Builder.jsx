@@ -72,7 +72,7 @@ export function Builder(){
 
     const [templateSet,setTemplateSet]=useState(false);
     // templateSet = false → Show the loader
-// templateSet = true , loading = false → Show the textarea and Send button.
+// templateSet = true , loading = false → Show the bottom textarea and Send button.
 
     const [userPrompt,setUserPrompt]=useState("")// this is for storing the further query messages of the user after intial web is made by llm
     
@@ -83,13 +83,15 @@ export function Builder(){
         });
         setTemplateSet(true);
         const {prompts,uiPrompts}=response.data;
-        console.log("uiprompt on fe",uiPrompts);
+        console.log("prompts from /template",prompts);
+        console.log("uiprompt from /template",uiPrompts);
+
         // parse the xml we got from uiprompts(be) then add it to the steps 
         setSteps( parseXml(uiPrompts[0]).map((x) =>({
             ...x,
             status:'pending'
         }) ))
-        console.log("steps after ui promots on fe",steps);
+        console.log("steps after /template",steps);
 
         setLoading(true);
 
@@ -104,11 +106,13 @@ export function Builder(){
         });
 
         setLoading(false);
+        console.log("response form /chat",stepsResponse.data.response)
         // set the steps we got from llm 
         setSteps(s=>[...s,...parseXml(stepsResponse.data.response).map(x=>({
             ...x,
             status:'pending'
         }))])
+        console.log("steps after /chat",steps);
 
                 // store the chat history
             setLlmMessages([
@@ -135,17 +139,21 @@ export function Builder(){
 // ======== this is for creating all files from the 'steps', that will be shown in file explorer=========
 
 useEffect(()=>{
+    // pick up all the steps that are still pending
+    const pending=steps.filter(({status})=>status==='pending');
+
+    // if nothing is pending then stop, this replaces updateHappened and prevents infinite updates
+    if(pending.length===0) return;
+
     let originalFiles=[...files];
-    let updateHappened=false;//helps to stop this effect if no update happened otherwise it will go on infinite updates
-    
-    // pick up the first pending update
-    steps.filter(({status})=>status==='pending').map(step=>{
-        updateHappened=true;
+
+    pending.forEach(step=>{
         if(step?.type==='CreateFile'){
-            let parsedPath=step.path?.split("/")??[]; //["src","components","app.jsx"]
+            // filter(Boolean) removes empty strings, so "/src/App.jsx" and "src/App.jsx" both work
+            let parsedPath=step.path?.split("/").filter(Boolean)??[]; //["src","components","app.jsx"]
 
             let currentFileStructure=[...originalFiles];
-        let finalAnswerRef=currentFileStructure
+            let finalAnswerRef=currentFileStructure
             let currentFolder=""
             while(parsedPath.length){//as long as items are present we will loop through else it is over(we keep popping from the front)
 
@@ -154,54 +162,51 @@ useEffect(()=>{
                 let currentFolderName=parsedPath[0];
                 // get the current folder/file name
 
-            parsedPath=parsedPath.slice(1);
+                parsedPath=parsedPath.slice(1);
                 //remove the current file/folder from current path
 
-            if(!parsedPath.length){
-                // it is file =app.jsx from src/component/app.jsx
-                let file=currentFileStructure.find(x=>x.path===currentFolder)
-                if(!file){
-                    // file dont exist=create new one
-                    currentFileStructure.push({
-                        name:currentFolderName,
-                        type:'file',
-                        path:currentFolder,
-                        content:step.code
-                    })
+                if(!parsedPath.length){
+                    // it is file =app.jsx from src/component/app.jsx
+                    let file=currentFileStructure.find(x=>x.path===currentFolder)
+                    if(!file){
+                        // file dont exist=create new one
+                        currentFileStructure.push({
+                            name:currentFolderName,
+                            type:'file',
+                            path:currentFolder,
+                            content:step.code
+                        })
+                    }
+                    else{//update the code=file is already there
+                        file.content=step.code;
+                    }
                 }
-                else{//update the code=file is already there
-                    file.content=step.code;
+                else{//its a folder
+                    let folder=currentFileStructure.find(x=>x.path===currentFolder)
+                    if(!folder){//create a new folder and then latter push the files in the children of this folder
+                        currentFileStructure.push({
+                            name:currentFolderName,
+                            type:'folder',
+                            path:currentFolder,
+                            children:[]
+                        })
+                    }
+                    // then move into the children of this folder eg-src->childre=component
+                    currentFileStructure=currentFileStructure.find(x=>x.path===currentFolder).children;
                 }
-            }
-            else{//its a folder 
-                let folder=currentFileStructure.find(x=>x.path===currentFolder)
-                if(!folder){//create a new folder and then latter push the files in the children of this folder
-                    currentFileStructure.push({
-                        name:currentFolderName,
-                        type:'folder',
-                        path:currentFolder,
-                        children:[]
-                    })
-                }
-                // then move into the children of this folder eg-src->childre=component
-                currentFileStructure=currentFileStructure.find(x=>x.path===currentFolder).children;
-            }
             }
             originalFiles=finalAnswerRef;
         }
     })
-    if(updateHappened){
-        setFiles(originalFiles)
-        setSteps(steps=>
-            steps.map((s)=>{
-                return {
-                    ...s,
-                    status:"completed"
-                }
-            })
-        )
-    }
-    console.log(files);
+
+    setFiles(originalFiles)
+
+    // mark ONLY the steps we just processed as completed, not every step
+    const doneIds=new Set(pending.map(s=>s.id));
+    setSteps(prev=>
+        prev.map(s=>doneIds.has(s.id)?{...s,status:'completed'}:s)
+    )
+    console.log("files after use effect of builder",files);
 },[steps,files])
 
 //==================== this is for creating structure as required by webContainer during mouting files/folders in it and then mount it into webcontainer==================
@@ -268,7 +273,7 @@ useEffect(()=>{
 
     const mountStructure=createMountStructure(files)
     // call the base fn for the 'files'
-    console.log(mountStructure);
+    console.log("mounted structure-",mountStructure);
     // put it into the webcontainer
     webcontainer?.mount(mountStructure);
 
@@ -393,3 +398,88 @@ useEffect(()=>{
     )
     
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// useEffect(()=>{
+//     let originalFiles=[...files];
+//     let updateHappened=false;//helps to stop this effect if no update happened otherwise it will go on infinite updates
+    
+//     // pick up the first pending update
+//     steps.filter(({status})=>status==='pending').map(step=>{
+//         updateHappened=true;
+//         if(step?.type==='CreateFile'){
+//             let parsedPath=step.path?.split("/")??[]; //["src","components","app.jsx"]
+
+//             let currentFileStructure=[...originalFiles];
+//         let finalAnswerRef=currentFileStructure
+//             let currentFolder=""
+//             while(parsedPath.length){//as long as items are present we will loop through else it is over(we keep popping from the front)
+
+//                 currentFolder=`${currentFolder}/${parsedPath[0]}`
+//                 // first it becomes src then src/component then src/component/app.jsx
+//                 let currentFolderName=parsedPath[0];
+//                 // get the current folder/file name
+
+//             parsedPath=parsedPath.slice(1);
+//                 //remove the current file/folder from current path
+
+//             if(!parsedPath.length){
+//                 // it is file =app.jsx from src/component/app.jsx
+//                 let file=currentFileStructure.find(x=>x.path===currentFolder)
+//                 if(!file){
+//                     // file dont exist=create new one
+//                     currentFileStructure.push({
+//                         name:currentFolderName,
+//                         type:'file',
+//                         path:currentFolder,
+//                         content:step.code
+//                     })
+//                 }
+//                 else{//update the code=file is already there
+//                     file.content=step.code;
+//                 }
+//             }
+//             else{//its a folder 
+//                 let folder=currentFileStructure.find(x=>x.path===currentFolder)
+//                 if(!folder){//create a new folder and then latter push the files in the children of this folder
+//                     currentFileStructure.push({
+//                         name:currentFolderName,
+//                         type:'folder',
+//                         path:currentFolder,
+//                         children:[]
+//                     })
+//                 }
+//                 // then move into the children of this folder eg-src->childre=component
+//                 currentFileStructure=currentFileStructure.find(x=>x.path===currentFolder).children;
+//             }
+//             }
+//             originalFiles=finalAnswerRef;
+//         }
+//     })
+//     if(updateHappened){
+//         setFiles(originalFiles)
+//         setSteps(steps=>
+//             steps.map((s)=>{
+//                 return {
+//                     ...s,
+//                     status:"completed"
+//                 }
+//             })
+//         )
+//     }
+//     console.log("files after use effect of builder",files);
+// },[steps,files])

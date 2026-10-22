@@ -16,9 +16,10 @@ app.use(cors());
 
 //for knowing if we are building react or nodejs and then giving intial setup commands
 app.post("/template",async(req,res)=>{
+    try{
     const prompt=req.body.prompt;
     // this is user's pure prompt
-    console.log("input for template",prompt);
+    console.log("input for /template",prompt);
 
     const response=await ai.models.generateContent({
         model:"gemini-3.5-flash-lite",
@@ -46,23 +47,38 @@ app.post("/template",async(req,res)=>{
     return res.status(403).json({
         message:"you can't access this"
     })
+    }
+    catch(e){
+        console.log(e);
+        return res.status(500).json({
+            message:'server not working'
+        })
+    }
 })
 
 
 app.post("/chat",async(req,res)=>{
+    try{
     const messages=req.body.messages;
-    console.log("input for chat",messages);
-    // const response=await ai.models.generateContent({
-    //     model:"gemini-3.5-flash-lite",
-    //     contents:messages,
-    //     config:{
-    //         systemInstruction:getSystemPrompt()
-    //     }
-    // })
-    // console.log("response of chat route",response.text);
-    return res.json({
-        response:"hi"
+    console.log("input for /chat",messages);
+    const response=await ai.models.generateContent({
+        model:"gemini-3.5-flash-lite",
+        contents:messages,
+        config:{
+            systemInstruction:getSystemPrompt()
+        }
     })
+    console.log("response of chat route",response.text);
+    return res.json({
+        response:response.text
+    })
+    }
+    catch(e){
+        console.log(e);
+        return res.status(500).json({
+            message:'server not working'
+        })
+    }
 })
 // response.text
 app.listen(3000,()=>{

@@ -37,60 +37,116 @@ input can have strings in middle so use regex
 */
 
 
-//take output of the llm and parses into steps that will be displayed in stepslist 
-export function parseXml(response){
-    const xmlMatch= response.match(/<boltArtifact[^>]*>([\s\S]*?)<\/boltArtifact>/);
-    // this will get the <boltartifact>.....</boltartifact>
+
+
+
+
+
+// //take output of the llm and parses into steps that will be displayed in stepslist 
+// export function parseXml(response){
+//     const xmlMatch= response.match(/<boltArtifact[^>]*>([\s\S]*?)<\/boltArtifact>/);
+//     // this will get the <boltartifact>.....</boltartifact>
     
-    if(!xmlMatch){
-        return [];
-    }
-    // index-0 has full content +boltartifact tags
-    // index-1 has only inside content of artifact
-    const xmlContent=xmlMatch[1];
-    const steps=[];//contains final ans
-    let stepId=1;//to give unique id to each
+//     if(!xmlMatch){
+//         return [];
+//     }
+//     // index-0 has full content +boltartifact tags
+//     // index-1 has only inside content of artifact
+//     const xmlContent=xmlMatch[1];
+//     const steps=[];//contains final ans
+//     let stepId=1;//to give unique id to each
 
-    const titleMatch=response.match(/title="([^"]*)"/);//get title of artifact
-    const artifactTitle=titleMatch?titleMatch[1]:'Project Files'
+//     const titleMatch=response.match(/title="([^"]*)"/);//get title of artifact
+//     const artifactTitle=titleMatch?titleMatch[1]:'Project Files'
 
-// push the base folder that is shown by boltartifact eg- react folder/nodejs folder/project files folder
-    steps.push({
-        id:stepId++,
-        title:artifactTitle,
-        description:'',
-        type:'CreateFolder',
-        status:'pending'
-    })
+// // push the base folder that is shown by boltartifact eg- react folder/nodejs folder/project files folder
+//     steps.push({
+//         id:stepId++,
+//         title:artifactTitle,
+//         description:'',
+//         type:'CreateFolder',
+//         status:'pending'
+//     })
 
-    // regex to get boltaction elements
-    const actionRegex= /<boltAction\s+type="([^"]*)"(?:\s+filePath="([^"]*)")?>([\s\S]*?)<\/boltAction>/g;
+//     // regex to get boltaction elements
+//     const actionRegex= /<boltAction\s+type="([^"]*)"(?:\s+filePath="([^"]*)")?>([\s\S]*?)<\/boltAction>/g;
     
-    let match;
-    while((match=actionRegex.exec(xmlContent)) !== null ){
-        const [,type,filePath,content]=match;
-        if(type==='file'){
-            // if its a file creation
-            steps.push({
-                id:stepId++,
-                title:`create ${filePath}||"file"`,
-                description:'',
-                type:"CreateFile",
-                status:"pending",
-                code:content.trim(),
-                path:filePath
-            })
-        }
-        else if(type==="shell"){
-            steps.push({
-                id:stepId++,
-                title:"run command",
-                description:"",
-                type:'RunScript',
-                status:'pending',
-                code:content.trim()
-            })
-        }
+//     let match;
+//     while((match=actionRegex.exec(xmlContent)) !== null ){
+//         const [,type,filePath,content]=match;
+//         if(type==='file'){
+//             // if its a file creation
+//             steps.push({
+//                 id:stepId++,
+//                 title:`create ${filePath||'file'}`,
+//                 description:'',
+//                 type:"CreateFile",
+//                 status:"pending",
+//                 code:content.trim(),
+//                 path:filePath
+//             })
+//         }
+//         else if(type==="shell"){
+//             steps.push({
+//                 id:stepId++,
+//                 title:"run command",
+//                 description:"",
+//                 type:'RunScript',
+//                 status:'pending',
+//                 code:content.trim()
+//             })
+//         }
+//     }
+//     return steps
+// }
+export function parseXml(response) {
+  const xmlMatch = response.match(/<boltArtifact[^>]*>([\s\S]*?)<\/boltArtifact>/i);
+  if (!xmlMatch) return [];
+
+  const xmlContent = xmlMatch[1];
+  const steps = [];
+  let stepId = 1;
+
+  const titleMatch = response.match(/<boltArtifact[^>]*title=["']([^"']*)["']/i);
+  steps.push({
+    id: stepId++,
+    title: titleMatch ? titleMatch[1] : "Project Files",
+    description: "",
+    type: "CreateFolder",
+    status: "pending",
+  });
+
+  // capture the whole attribute string, then pull attributes out separately
+  const actionRegex = /<boltAction\b([^>]*)>([\s\S]*?)<\/boltAction>/gi;
+  const attr = (attrs, name) =>
+    attrs.match(new RegExp(`${name}\\s*=\\s*["']([^"']*)["']`, "i"))?.[1];
+
+  let match;
+  while ((match = actionRegex.exec(xmlContent)) !== null) {
+    const [, attrs, content] = match;
+    const type = attr(attrs, "type");
+    const filePath = attr(attrs, "filePath");
+
+    if (type === "file") {
+      steps.push({
+        id: stepId++,
+        title: `create ${filePath || "file"}`,
+        description: "",
+        type: "CreateFile",
+        status: "pending",
+        code: content.trim(),
+        path: filePath,
+      });
+    } else if (type === "shell") {
+      steps.push({
+        id: stepId++,
+        title: "run command",
+        description: "",
+        type: "RunScript",
+        status: "pending",
+        code: content.trim(),
+      });
     }
-    return steps
+  }
+  return steps;
 }
