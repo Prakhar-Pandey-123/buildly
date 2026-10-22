@@ -282,6 +282,19 @@ export function Home(){
 }
 export default Home//
 
+
+
+
+
+
+
+
+
+
+
+
+
+// old code ------------------------------------------->>>>>
 // import { useState } from "react"
 // import {useNavigate} from "react-router-dom"
 // import {Wand2} from 'lucide-react'
