@@ -11,6 +11,8 @@ import {CodeEditor} from "../components/CodeEditor"
 import {parseXml} from "../steps.js"
 import {PreviewFrame} from "../components/PreviewFrame.jsx"
 import {Wand2} from 'lucide-react'
+import { Download } from "../components/Download.jsx";
+
 
 
 export function Builder(){
@@ -303,6 +305,8 @@ useEffect(()=>{
                     </h1>
                     <p className="mt-0.5 truncate text-sm text-slate-400">Prompt: {prompt}</p>
                 </div>
+
+                <Download files={files} />
             </header>
 
         <div className="relative z-10 flex-1 overflow-hidden">
@@ -327,7 +331,7 @@ useEffect(()=>{
                             onChange={(e)=>{
                                 setUserPrompt(e.target.value)
                             }}
-                            className="h-24 w-full resize-none rounded-xl border border-white/10 bg-[#070a12] p-3 text-sm leading-relaxed text-slate-100 placeholder-slate-500 outline-none transition focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-500/30"
+                            className="h-12 w-full resize-none rounded-xl border border-white/10 bg-[#070a12] p-3 text-sm leading-relaxed text-slate-100 placeholder-slate-500 outline-none transition focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-500/30"
                             >
                             </textarea>
                             <button 
