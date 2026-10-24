@@ -14,6 +14,30 @@ const app=express();
 app.use(express.json());
 app.use(cors());
 
+// global daily limit:20 requests from both ai routes
+const DAILY_LIMIT=20;
+let dailyCalls=0;
+let currentDay=new Date().toISOString().slice(0,10);
+function globalDailyLimit(req,res,next){
+    const today=new Date().toISOString().slice(0,10);
+    // reset counter when a new day starts
+    if(today!==currentDay){
+        currentDay=today;
+        dailyCalls=0;
+    } 
+    // reject request after reaching daily limit
+    if(dailyCalls>=DAILY_LIMIT){
+        return res.status(429).json({
+            message:"Buildly has reached its daily AI limit.Please try again tomorrow"
+        })
+    }
+    // count this request
+    dailyCalls++;
+    next();
+}
+
+app.use(["/template","/chat"],globalDailyLimit);
+
 //for knowing if we are building react or nodejs and then giving intial setup commands
 app.post("/template",async(req,res)=>{
     try{
