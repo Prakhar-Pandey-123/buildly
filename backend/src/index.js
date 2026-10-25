@@ -105,6 +105,10 @@ app.post("/chat",async(req,res)=>{
         })
     }
 })
+
+app.get("/", (req, res) => {
+    res.send("Buildly backend is running!");
+});
 // response.text
 
 app.listen(PORT, () => {
