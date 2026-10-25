@@ -5,6 +5,7 @@ import { reactBasePrompt } from "./react_prompt.js"
 import {nodeBasePrompt} from "./nodejs_prompt.js"
 import { getSystemPrompt } from "./system_prompt.js"
 import cors from "cors";
+const PORT = process.env.PORT || 3000;
 
 const ai=new GoogleGenAI({
     apiKey:process.env.GEMINI_API_KEY
@@ -105,6 +106,7 @@ app.post("/chat",async(req,res)=>{
     }
 })
 // response.text
-app.listen(3000,()=>{
-    console.log("app is listening at the port 3000")
+
+app.listen(PORT, () => {
+    console.log(`App is listening on port ${PORT}`);
 });
