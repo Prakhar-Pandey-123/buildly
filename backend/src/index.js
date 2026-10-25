@@ -43,7 +43,7 @@ app.post("/template",async(req,res)=>{
     try{
     const prompt=req.body.prompt;
     // this is user's pure prompt
-    console.log("input for /template",prompt);
+    // console.log("input for /template",prompt);
 
     const response=await ai.models.generateContent({
         model:"gemini-3.5-flash-lite",
@@ -53,12 +53,12 @@ app.post("/template",async(req,res)=>{
         }
     })
     const answer=response.text;
-    console.log("response of template route",response.text);
+    // console.log("response of template route",response.text);
     if(answer=="react"){
         // prompts are for llm, uiprompts are for frontend/we containers
         
         return res.json({
-            prompts:["create a BASIC REACT WEBSITE ,DO NOT WRITE BACKEND OR EXPRESS ,JUST FRONTEND IN REACT,we supports JSX syntax with Tailwind CSS classes, React hooks, and Lucide React for icons. Do not install other packages for UI themes, icons, etc","these are the files that are already present for react- eslint.config.js, index.html, package.json, postcss.config.js, tailwind.config.js, vite.config.js, src/App.jsx, src/index.css, src/main.jsx"],
+            prompts:["create a BASIC REACT WEBSITE ,DO NOT WRITE BACKEND OR EXPRESS ,JUST FRONTEND IN REACT,we supports JSX syntax with Tailwind CSS classes, React hooks, and Lucide React for icons. Do not install other packages for UI themes, icons, etc","these are the files that are already present for react-  index.html, package.json, postcss.config.js, tailwind.config.js, vite.config.js, src/App.jsx, src/index.css, src/main.jsx"],
             uiPrompts:[reactBasePrompt]
         })
     }
@@ -73,7 +73,7 @@ app.post("/template",async(req,res)=>{
     })
     }
     catch(e){
-        console.log(e);
+         console.log(e);
         return res.status(500).json({
             message:'server not working'
         })
@@ -84,7 +84,7 @@ app.post("/template",async(req,res)=>{
 app.post("/chat",async(req,res)=>{
     try{
     const messages=req.body.messages;
-    console.log("input for /chat",messages);
+    // console.log("input for /chat",messages);
     const response=await ai.models.generateContent({
         model:"gemini-3.5-flash-lite",
         contents:messages,
@@ -92,7 +92,7 @@ app.post("/chat",async(req,res)=>{
             systemInstruction:getSystemPrompt()
         }
     })
-    console.log("response of chat route",response.text);
+    // console.log("response of chat route",response.text);
     return res.json({
         response:response.text
     })

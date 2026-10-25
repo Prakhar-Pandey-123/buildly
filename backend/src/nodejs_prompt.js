@@ -20,13 +20,19 @@ export const nodeBasePrompt = `
       type="file"
       filePath="package.json"
     >
-      {
-        "name": "node-starter",
-        "private": true,
-        "scripts": {
-          "test": "echo \\"Error: no test specified\\" && exit 1"
-        }
+          {
+      "name": "node-starter",
+      "private": true,
+      "type": "module",
+      "scripts": {
+        "dev": "node index.js",
+        "start": "node index.js"
+      },
+      "dependencies": {
+        "express": "^4.19.2",
+        "cors": "^2.8.5"
       }
+    }
     </boltAction>
 
   </boltArtifact>

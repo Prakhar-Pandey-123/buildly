@@ -12,6 +12,7 @@ import {parseXml} from "../steps.js"
 import {PreviewFrame} from "../components/PreviewFrame.jsx"
 import {Wand2} from 'lucide-react'
 import { Download } from "../components/Download.jsx";
+import toast from "react-hot-toast";
 
 
 
@@ -82,20 +83,23 @@ export function Builder(){
     
 
     async function init(){
+        try{
         const response=await axios.post(`${BACKEND_URL}/template`,{
             prompt:prompt.trim()
         });
         setTemplateSet(true);
+    
         const {prompts,uiPrompts}=response.data;
-        console.log("prompts from /template",prompts);
-        console.log("uiprompt from /template",uiPrompts);
+        // console.log("prompts from /template",prompts);
+        // console.log("uiprompt from /template",uiPrompts);
+    
 
         // parse the xml we got from uiprompts(be) then add it to the steps 
         setSteps( parseXml(uiPrompts[0]).map((x) =>({
             ...x,
             status:'pending'
         }) ))
-        console.log("steps after /template",steps);
+        // console.log("steps after /template",steps);
 
         setLoading(true);
 
@@ -110,13 +114,13 @@ export function Builder(){
         });
 
         setLoading(false);
-        console.log("response form /chat",stepsResponse.data.response)
+        // console.log("response form /chat",stepsResponse.data.response)
         // set the steps we got from llm 
         setSteps(s=>[...s,...parseXml(stepsResponse.data.response).map(x=>({
             ...x,
             status:'pending'
         }))])
-        console.log("steps after /chat",steps);
+        // console.log("steps after /chat",steps);
 
                 // store the chat history
             setLlmMessages([
@@ -133,6 +137,15 @@ export function Builder(){
                 parts: [{ text: stepsResponse.data.response }]
             }
             ]);
+        }
+            catch (error) {
+                    if (error.response?.status === 403) {
+                        toast.error("Unsupported prompt")
+                    } else {
+                        console.error("Error:", error.message);
+                    }
+                    navigate("/");
+            }
     }
 
 
@@ -210,7 +223,7 @@ useEffect(()=>{
     setSteps(prev=>
         prev.map(s=>doneIds.has(s.id)?{...s,status:'completed'}:s)
     )
-    console.log("files after use effect of builder",files);
+    // console.log("files after use effect of builder",files);
 },[steps,files])
 
 //==================== this is for creating structure as required by webContainer during mouting files/folders in it and then mount it into webcontainer==================
@@ -277,7 +290,7 @@ useEffect(()=>{
 
     const mountStructure=createMountStructure(files)
     // call the base fn for the 'files'
-    console.log("mounted structure-",mountStructure);
+    // console.log("mounted structure-",mountStructure);
     // put it into the webcontainer
     webcontainer?.mount(mountStructure);
 
